@@ -1,6 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import requests
+from pydantic import BaseModel
+
+class req(BaseModel):
+    prompt :str
 
 app = FastAPI()
 
@@ -13,9 +17,7 @@ app.add_middleware(
 )
 
 @app.post("/api/chat")
-async def chat(request: Request):
-    data = await request.json()
-    prompt = data.get("prompt")
+async def chat(prompt: req):
 
     instruction = (
         "You are an AI trained to return a single word, nothing else, not even explanation or other texts just a single word. "
@@ -24,16 +26,16 @@ async def chat(request: Request):
     )
     url = "https://api.groq.com/openai/v1/chat/completions"
     API_KEY = "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"
-    header = {
+    headers = {
         "Authorization":f"Bearer {API_KEY}",
         "Content-Type":"application/json"
     }
     data = {
-        "message":[{"role":"user","content":instruction}],
+        "messages":[{"role":"user","content":instruction}],
         "model":"meta-llama/llama-4-scout-17b-16e-instruct",
         "max_tokens": 1024
     }
 
-    res = requests.post(url, header=header , json = data)
+    res = requests.post(url, headers=headers, json = data)
 
     return res.json()
